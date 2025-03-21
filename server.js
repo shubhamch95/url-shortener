@@ -28,7 +28,6 @@ app.post('/shorten', limiter, async (req, res) => {
   const { originalUrl } = req.body;
 
   try {
-    // Validate URL
     let urlObj;
     try {
       urlObj = new URL(originalUrl);
@@ -38,13 +37,11 @@ app.post('/shorten', limiter, async (req, res) => {
 
     const urlDomain = urlObj.hostname.toLowerCase();
 
-    // Check if the domain is blacklisted
     const blacklistEntry = await Blacklist.findOne({ domain: urlDomain });
     if (blacklistEntry) {
       return res.status(400).json({ error: 'This URL is blacklisted and cannot be shortened.' });
     }
 
-    // Check if the URL already exists
     const existingUrl = await urlModel.findOne({ originalUrl });
     if (existingUrl) {
       return res.json({ shortUrl: existingUrl.shortUrl });
@@ -66,7 +63,6 @@ app.post('/blacklist', async (req, res) => {
   const { domain } = req.body;
 
   try {
-    // Validate & extract the hostname
     let urlObj;
     try {
       urlObj = new URL(domain);
@@ -76,13 +72,11 @@ app.post('/blacklist', async (req, res) => {
 
     const extractedDomain = urlObj.hostname.toLowerCase();
 
-    // Check if already blacklisted
     const existingEntry = await Blacklist.findOne({ domain: extractedDomain });
     if (existingEntry) {
       return res.status(400).json({ error: 'Domain already blacklisted.' });
     }
 
-    // Save normalized domain
     const newEntry = new Blacklist({ domain: extractedDomain });
     await newEntry.save();
     res.status(201).json({ message: 'Domain added to blacklist.', domain: extractedDomain });
@@ -135,7 +129,6 @@ app.get('/analytics/:shortUrl', async (req, res) => {
   });
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
